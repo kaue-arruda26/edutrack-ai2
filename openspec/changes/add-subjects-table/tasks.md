@@ -18,6 +18,7 @@
   - Acessar: Xano Backend → Tables
   - Ação: Importar/criar tabela `subjects` usando `tables/subjects.xs`
   - Esperado: Tabela criada com todos os campos
+  - **Arquivo auxiliar**: [VERIFICACAO-RAPIDA.md](VERIFICACAO-RAPIDA.md) para validação rápida
   - Resultado: ✅ / ❌
 
 - [ ] **Validar Foreign Key com `user/users`**
@@ -25,6 +26,7 @@
     1. Confirmar que `user/users` existe no Xano
     2. Testar constraint: Tentar criar subject com `user_id` inválido
     3. Esperado: Erro de constraint (fk_constraint_violation)
+  - **Arquivo auxiliar**: Execute SQL em [tests-xano.sql](tests-xano.sql#L81-L89)
   - Resultado: ✅ / ❌
 
 ### Fase 3: Performance e Robustez
@@ -32,6 +34,7 @@
   - Tipo: Index (não UNIQUE)
   - Propósito: Otimizar queries filtradas por user (SELECT * FROM subjects WHERE user_id = ?)
   - Verificação: Confirmar índice criado no Xano
+  - **Arquivo auxiliar**: [VERIFICACAO-RAPIDA.md](VERIFICACAO-RAPIDA.md) valida índices
   - Resultado: ✅ / ❌
 
 - [ ] **Testar Cascade Delete**
@@ -39,40 +42,63 @@
     1. Criar subject com user_id = X
     2. Deletar user com id = X
     3. Esperado: subject também é deletado
+  - **Arquivo auxiliar**: [tests-xano.sql](tests-xano.sql#L113-L127) - TESTE 5
   - Resultado: ✅ / ❌
 
 ### Fase 4: Testes Funcionais
-- [ ] **Teste 1: INSERT válido**
+
+**Arquivo com todos os testes**: [tests-xano.sql](tests-xano.sql)
+
+- [ ] **Teste 1: INSERT válido** ([tests-xano.sql#L44-L48](tests-xano.sql#L44-L48))
   ```sql
   INSERT INTO subjects (name, teacher, hours, user_id)
-  VALUES ('Matemática', 'Prof. João', 60, 1);
+  VALUES ('Matemática', 'Prof. João Silva', 60, 1);
   ```
   - Esperado: Sucesso, id auto-incrementado
   - Resultado: ✅ / ❌
 
-- [ ] **Teste 2: Validar UNIQUE em `name`**
+- [ ] **Teste 2: Validar UNIQUE em `name`** ([tests-xano.sql#L54-L58](tests-xano.sql#L54-L58))
   ```sql
   INSERT INTO subjects (name, teacher, hours, user_id)
-  VALUES ('Matemática', 'Prof. Maria', 45, 1);
+  VALUES ('Matemática', 'Prof. Maria Santos', 45, 1);
   ```
-  - Esperado: ERRO (duplicate name)
+  - Esperado: ERRO 1062 (duplicate entry)
   - Resultado: ✅ / ❌
 
-- [ ] **Teste 3: NOT NULL em campos obrigatórios**
+- [ ] **Teste 3: NOT NULL em campos obrigatórios** ([tests-xano.sql#L65-L69](tests-xano.sql#L65-L69))
   ```sql
   INSERT INTO subjects (name, teacher, hours, user_id)
   VALUES ('Física', NULL, 50, 1);
   ```
-  - Esperado: ERRO (NULL em teacher)
+  - Esperado: ERRO 1048 (cannot be null)
   - Resultado: ✅ / ❌
 
-- [ ] **Teste 4: Foreign Key em `user_id`**
+- [ ] **Teste 4: Foreign Key em `user_id`** ([tests-xano.sql#L76-L80](tests-xano.sql#L76-L80))
   ```sql
   INSERT INTO subjects (name, teacher, hours, user_id)
-  VALUES ('Química', 'Prof. Ana', 40, 999);
+  VALUES ('Química', 'Prof. Ana Costa', 40, 999);
   ```
-  - Esperado: ERRO (user_id 999 não existe)
+  - Esperado: ERRO 1452  e Versionamento
+
+- [ ] **Git commit dos arquivos auxiliares** (já feito na Fase 1)
+  ```bash
+  git add -A openspec/changes/add-subjects-table/ tables/subjects.xs
+  git commit -m "feat: adiciona tabela 'subjects' com OpenSpec e testes"
+  ```
+  - Commit: `671cf2b` ✅
+
+- [ ] **Git commit com documentação de testes** (próximo)
+  ```bash
+  git add openspec/changes/add-subjects-table/tests-xano.sql
+  git add openspec/changes/add-subjects-table/VERIFICACAO-RAPIDA.md
+  git commit -m "docs: adiciona scripts de validação e testes para tabela 'subjects'"
+  ```
   - Resultado: ✅ / ❌
+
+- [ ] **Marcar change como concluída** (após todos os testes passarem)
+  - [ ] Todos os testes da Fase 4 passaram
+  - [ ] FK funcionando com cascade
+  - [ ] Índices criados e validadosesultado: ✅ / ❌
 
 ### Fase 5: Documentação
 - [ ] **Atualizar README ou wiki** (se aplicável)
